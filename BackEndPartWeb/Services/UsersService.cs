@@ -56,6 +56,7 @@ namespace BackEndPartWeb.Services
             var user = await this.GetUserById(id);
             if (user == null) throw new ArgumentNullException("","User does not exist");
             _context.Users.Remove(user);
+            _context.Images.Remove(user.Image);
             _context.SaveChanges();
             return user;
         }
@@ -67,7 +68,10 @@ namespace BackEndPartWeb.Services
             if (!request.Username.Equals(user.Username)) user.Username = request.Username;
             if (!request.Email.Equals(user.Email)) user.Email = request.Email;
             if (!request.FullName.Equals(user.FullName)) user.FullName = request.FullName;
-            if (request.Image is not null && !request.Image.Equals(user.Image)) user.Image = request.Image;
+            if (request.Image is not null && !request.Image.Equals(user.Image)) {
+                _context.Images.Remove(user.Image);
+                user.Image = request.Image;
+            } 
             else _context.Attach(user.Image);
             _context.Attach(user.Role);
             await _context.SaveChangesAsync(); 
@@ -104,6 +108,8 @@ namespace BackEndPartWeb.Services
         {
             var monster = await _context.Monsters.FirstOrDefaultAsync(m => m.Id == monsterId);
             var user = await GetUserById(userId);
+            if (user == null) throw new ArgumentNullException("", "User does not exist");
+            if (monster == null) throw new ArgumentNullException("", "Monster does not exist");
             if (user.Monsters.Exists(monster => monster.Id == monsterId)) throw new ArgumentException("User already has this monster");
             user.Monsters.Add(monster);
             await _context.SaveChangesAsync();
@@ -114,6 +120,8 @@ namespace BackEndPartWeb.Services
         {
             var user = await GetUserById(userId);
             var monster = await _context.Monsters.FirstOrDefaultAsync(m => m.Id == monsterId);
+            if (user == null) throw new ArgumentNullException("", "User does not exist");
+            if (monster == null) throw new ArgumentNullException("", "Monster does not exist");
             if (!user.Monsters.Exists(monster => monster.Id == monsterId)) throw new ArgumentException("User already doesnt have this monster");
             user.Monsters.Remove(monster);
             await _context.SaveChangesAsync();

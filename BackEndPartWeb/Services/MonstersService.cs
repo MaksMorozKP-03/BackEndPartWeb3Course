@@ -52,6 +52,7 @@ namespace BackEndPartWeb.Services
             var monster = await GetMonsterById(id);
             if (monster is null) throw new ArgumentNullException("", "Monster does not exist");
             _context.Monsters.Remove(monster);
+            _context.Images.Remove(monster.Image);
             _context.SaveChanges();
             return monster;
         }
